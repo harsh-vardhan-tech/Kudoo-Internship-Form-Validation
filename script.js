@@ -1,295 +1,85 @@
-// =========================
-// FORM VALIDATION
-// =========================
+const form = document.getElementById("contactForm");
 
-const form =
-  document.getElementById('contactForm');
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
 
-const successMsg =
-  document.getElementById('successMsg');
+  const name = document.getElementById("name");
+  const email = document.getElementById("email");
+  const phone = document.getElementById("phone");
+  const message = document.getElementById("message");
 
+  const nameError = document.getElementById("nameError");
+  const emailError = document.getElementById("emailError");
+  const phoneError = document.getElementById("phoneError");
+  const messageError = document.getElementById("messageError");
+  const successMessage = document.getElementById("successMessage");
 
-/* =========================
-   FIELD DEFINITIONS
-========================= */
+  let isValid = true;
 
-const fields = {
+  nameError.textContent = "";
+  emailError.textContent = "";
+  phoneError.textContent = "";
+  messageError.textContent = "";
+  successMessage.textContent = "";
 
-  name: {
+  [name, email, phone, message].forEach((field) => {
+    field.classList.remove("error-input", "success-input");
+  });
 
-    el:
-      document.getElementById('name'),
-
-    err:
-      document.getElementById('errName'),
-
-    validate: (v) => {
-
-      if (!v.trim())
-        return 'Please enter your name.';
-
-      if (v.trim().length < 2)
-        return 'Name must be at least 2 characters.';
-
-      if (!/^[a-zA-Z\s.'-]+$/.test(v.trim()))
-        return 'Name can only contain letters.';
-
-      return '';
-    }
-  },
-
-
-  email: {
-
-    el:
-      document.getElementById('email'),
-
-    err:
-      document.getElementById('errEmail'),
-
-    validate: (v) => {
-
-      if (!v.trim())
-        return 'Please enter your email.';
-
-      const re =
-        /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-      if (!re.test(v.trim()))
-        return 'Please enter a valid email address.';
-
-      return '';
-    }
-  },
-
-
-  phone: {
-
-    el:
-      document.getElementById('phone'),
-
-    err:
-      document.getElementById('errPhone'),
-
-    validate: (v) => {
-
-      if (!v.trim())
-        return 'Please enter your phone number.';
-
-      const cleaned =
-        v.replace(/[\s+\-()]/g, '');
-
-      if (!/^\d{10,15}$/.test(cleaned))
-        return 'Phone must be 10–15 digits.';
-
-      return '';
-    }
-  },
-
-
-  message: {
-
-    el:
-      document.getElementById('message'),
-
-    err:
-      document.getElementById('errMessage'),
-
-    validate: (v) => {
-
-      if (!v.trim())
-        return 'Please write a short message.';
-
-      if (v.trim().length < 10)
-        return 'Message should be at least 10 characters.';
-
-      return '';
-    }
-  }
-
-};
-
-
-/* =========================
-   LIVE VALIDATION
-========================= */
-
-Object.keys(fields).forEach((key) => {
-
-  const f = fields[key];
-
-  f.el.addEventListener(
-    'input',
-    () => validateField(key)
-  );
-
-  f.el.addEventListener(
-    'blur',
-    () => validateField(key)
-  );
-
-});
-
-
-/* =========================
-   VALIDATE ONE FIELD
-========================= */
-
-function validateField(key) {
-
-  const f = fields[key];
-
-  const value =
-    f.el.value;
-
-  const err =
-    f.validate(value);
-
-  const wrap =
-    f.el.closest('.field');
-
-
-  if (err) {
-
-    wrap.classList.add('error');
-
-    wrap.classList.remove('success');
-
-    f.err.textContent =
-      err;
-
-    return false;
-
+  if (name.value.trim() === "") {
+    nameError.textContent = "Name is required.";
+    name.classList.add("error-input");
+    isValid = false;
   } else {
-
-    wrap.classList.remove('error');
-
-    wrap.classList.add('success');
-
-    f.err.textContent =
-      '';
-
-    return true;
-  }
-}
-
-
-/* =========================
-   FORM SUBMISSION
-========================= */
-
-form.addEventListener(
-  'submit',
-  (e) => {
-
-    e.preventDefault();
-
-    let allValid = true;
-
-
-    Object.keys(fields).forEach(
-      (key) => {
-
-        if (!validateField(key)) {
-
-          allValid = false;
-        }
-
-      }
-    );
-
-
-    /* INVALID */
-
-    if (!allValid) {
-
-      const card =
-        document.querySelector('.form-card');
-
-      card.style.animation =
-        'none';
-
-      void card.offsetWidth;
-
-      card.style.animation =
-        'shake 0.4s';
-
-      return;
-    }
-
-
-    /* VALID */
-
-    successMsg.classList.add(
-      'show'
-    );
-
-
-    /* RESET */
-
-    setTimeout(() => {
-
-      form.reset();
-
-      Object.keys(fields).forEach(
-        (key) => {
-
-          fields[key]
-            .el
-            .closest('.field')
-            .classList.remove('success');
-
-        }
-      );
-
-    }, 800);
-
-
-    /* HIDE MESSAGE */
-
-    setTimeout(() => {
-
-      successMsg.classList.remove(
-        'show'
-      );
-
-    }, 5000);
-
-  }
-);
-
-
-/* =========================
-   SHAKE ANIMATION
-========================= */
-
-const style =
-  document.createElement('style');
-
-
-style.textContent = `
-
-  @keyframes shake {
-
-    0%, 100% {
-      transform: translateX(0);
-    }
-
-    25% {
-      transform: translateX(-8px);
-    }
-
-    50% {
-      transform: translateX(8px);
-    }
-
-    75% {
-      transform: translateX(-5px);
-    }
-
+    name.classList.add("success-input");
   }
 
-`;
+  const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,}$/i;
 
+  if (email.value.trim() === "") {
+    emailError.textContent = "Email is required.";
+    email.classList.add("error-input");
+    isValid = false;
+  } else if (!emailPattern.test(email.value.trim())) {
+    emailError.textContent = "Enter a valid email address.";
+    email.classList.add("error-input");
+    isValid = false;
+  } else {
+    email.classList.add("success-input");
+  }
 
-document.head.appendChild(style);
+  const phonePattern = /^[0-9]{10}$/;
+
+  if (phone.value.trim() === "") {
+    phoneError.textContent = "Phone number is required.";
+    phone.classList.add("error-input");
+    isValid = false;
+  } else if (!phonePattern.test(phone.value.trim())) {
+    phoneError.textContent = "Phone number must contain 10 digits.";
+    phone.classList.add("error-input");
+    isValid = false;
+  } else {
+    phone.classList.add("success-input");
+  }
+
+  if (message.value.trim() === "") {
+    messageError.textContent = "Message is required.";
+    message.classList.add("error-input");
+    isValid = false;
+  } else if (message.value.trim().length < 10) {
+    messageError.textContent = "Message must be at least 10 characters.";
+    message.classList.add("error-input");
+    isValid = false;
+  } else {
+    message.classList.add("success-input");
+  }
+
+  if (isValid) {
+    successMessage.textContent = "Form submitted successfully!";
+    form.reset();
+
+    [name, email, phone, message].forEach((field) => {
+      field.classList.remove("success-input");
+    });
+  }
+});
