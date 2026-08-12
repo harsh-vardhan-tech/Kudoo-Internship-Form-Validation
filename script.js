@@ -1,72 +1,295 @@
-const form = document.getElementById("contactForm");
+// =========================
+// FORM VALIDATION
+// =========================
 
-const nameInput = document.getElementById("name");
-const emailInput = document.getElementById("email");
-const phoneInput = document.getElementById("phone");
-const messageInput = document.getElementById("message");
+const form =
+  document.getElementById('contactForm');
 
-const nameError = document.getElementById("nameError");
-const emailError = document.getElementById("emailError");
-const phoneError = document.getElementById("phoneError");
-const messageError = document.getElementById("messageError");
+const successMsg =
+  document.getElementById('successMsg');
 
-const successMessage = document.getElementById("successMessage");
 
-form.addEventListener("submit", function (event) {
+/* =========================
+   FIELD DEFINITIONS
+========================= */
 
-    event.preventDefault();
+const fields = {
 
-    // Clear previous errors
-    nameError.textContent = "";
-    emailError.textContent = "";
-    phoneError.textContent = "";
-    messageError.textContent = "";
-    successMessage.textContent = "";
+  name: {
 
-    let isValid = true;
+    el:
+      document.getElementById('name'),
 
-    // Name validation
-    if (nameInput.value.trim() === "") {
-        nameError.textContent = "Name is required.";
-        isValid = false;
+    err:
+      document.getElementById('errName'),
+
+    validate: (v) => {
+
+      if (!v.trim())
+        return 'Please enter your name.';
+
+      if (v.trim().length < 2)
+        return 'Name must be at least 2 characters.';
+
+      if (!/^[a-zA-Z\s.'-]+$/.test(v.trim()))
+        return 'Name can only contain letters.';
+
+      return '';
     }
+  },
 
-    // Email validation
-    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
 
-    if (emailInput.value.trim() === "") {
-        emailError.textContent = "Email is required.";
-        isValid = false;
+  email: {
+
+    el:
+      document.getElementById('email'),
+
+    err:
+      document.getElementById('errEmail'),
+
+    validate: (v) => {
+
+      if (!v.trim())
+        return 'Please enter your email.';
+
+      const re =
+        /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+      if (!re.test(v.trim()))
+        return 'Please enter a valid email address.';
+
+      return '';
     }
-    else if (!emailPattern.test(emailInput.value.trim())) {
-        emailError.textContent = "Enter a valid email address.";
-        isValid = false;
+  },
+
+
+  phone: {
+
+    el:
+      document.getElementById('phone'),
+
+    err:
+      document.getElementById('errPhone'),
+
+    validate: (v) => {
+
+      if (!v.trim())
+        return 'Please enter your phone number.';
+
+      const cleaned =
+        v.replace(/[\s+\-()]/g, '');
+
+      if (!/^\d{10,15}$/.test(cleaned))
+        return 'Phone must be 10–15 digits.';
+
+      return '';
     }
+  },
 
-    // Phone validation
-    const phonePattern = /^[0-9]{10}$/;
 
-    if (phoneInput.value.trim() === "") {
-        phoneError.textContent = "Phone number is required.";
-        isValid = false;
+  message: {
+
+    el:
+      document.getElementById('message'),
+
+    err:
+      document.getElementById('errMessage'),
+
+    validate: (v) => {
+
+      if (!v.trim())
+        return 'Please write a short message.';
+
+      if (v.trim().length < 10)
+        return 'Message should be at least 10 characters.';
+
+      return '';
     }
-    else if (!phonePattern.test(phoneInput.value.trim())) {
-        phoneError.textContent = "Enter a valid 10-digit phone number.";
-        isValid = false;
-    }
+  }
 
-    // Message validation
-    if (messageInput.value.trim() === "") {
-        messageError.textContent = "Message is required.";
-        isValid = false;
-    }
+};
 
-    // Final result
-    if (isValid) {
 
-        successMessage.textContent =
-            "Form submitted successfully!";
+/* =========================
+   LIVE VALIDATION
+========================= */
 
-        form.reset();
-    }
+Object.keys(fields).forEach((key) => {
+
+  const f = fields[key];
+
+  f.el.addEventListener(
+    'input',
+    () => validateField(key)
+  );
+
+  f.el.addEventListener(
+    'blur',
+    () => validateField(key)
+  );
+
 });
+
+
+/* =========================
+   VALIDATE ONE FIELD
+========================= */
+
+function validateField(key) {
+
+  const f = fields[key];
+
+  const value =
+    f.el.value;
+
+  const err =
+    f.validate(value);
+
+  const wrap =
+    f.el.closest('.field');
+
+
+  if (err) {
+
+    wrap.classList.add('error');
+
+    wrap.classList.remove('success');
+
+    f.err.textContent =
+      err;
+
+    return false;
+
+  } else {
+
+    wrap.classList.remove('error');
+
+    wrap.classList.add('success');
+
+    f.err.textContent =
+      '';
+
+    return true;
+  }
+}
+
+
+/* =========================
+   FORM SUBMISSION
+========================= */
+
+form.addEventListener(
+  'submit',
+  (e) => {
+
+    e.preventDefault();
+
+    let allValid = true;
+
+
+    Object.keys(fields).forEach(
+      (key) => {
+
+        if (!validateField(key)) {
+
+          allValid = false;
+        }
+
+      }
+    );
+
+
+    /* INVALID */
+
+    if (!allValid) {
+
+      const card =
+        document.querySelector('.form-card');
+
+      card.style.animation =
+        'none';
+
+      void card.offsetWidth;
+
+      card.style.animation =
+        'shake 0.4s';
+
+      return;
+    }
+
+
+    /* VALID */
+
+    successMsg.classList.add(
+      'show'
+    );
+
+
+    /* RESET */
+
+    setTimeout(() => {
+
+      form.reset();
+
+      Object.keys(fields).forEach(
+        (key) => {
+
+          fields[key]
+            .el
+            .closest('.field')
+            .classList.remove('success');
+
+        }
+      );
+
+    }, 800);
+
+
+    /* HIDE MESSAGE */
+
+    setTimeout(() => {
+
+      successMsg.classList.remove(
+        'show'
+      );
+
+    }, 5000);
+
+  }
+);
+
+
+/* =========================
+   SHAKE ANIMATION
+========================= */
+
+const style =
+  document.createElement('style');
+
+
+style.textContent = `
+
+  @keyframes shake {
+
+    0%, 100% {
+      transform: translateX(0);
+    }
+
+    25% {
+      transform: translateX(-8px);
+    }
+
+    50% {
+      transform: translateX(8px);
+    }
+
+    75% {
+      transform: translateX(-5px);
+    }
+
+  }
+
+`;
+
+
+document.head.appendChild(style);
